@@ -97,15 +97,12 @@ class _LoginPageUIState extends State<LoginPageUI> {
   }
 
   Widget loginImage() {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: Container(
-        margin: EdgeInsets.only(left: 16, right: 16, top: 16),
-        alignment: Alignment.center,
-        child: SvgPicture.asset('assets/login_image.svg',
-          width: min(Get.width, Get.height) * (0.6),
-          height: min(Get.width, Get.height) * (0.6),),
-      ),
+    return Container(
+      margin: EdgeInsets.only(left: 16, right: 16, top: 16),
+      alignment: Alignment.center,
+      child: SvgPicture.asset('assets/login_image.svg',
+        width: min(Get.width, Get.height)/(1.3),
+        height: min(Get.width, Get.height)/(1.3),),
     );
   }
 
@@ -228,7 +225,7 @@ class _LoginPageUIState extends State<LoginPageUI> {
       buttonColor = Color(blue).withAlpha(100);
     });
 
-    if (_networkConnectivityController.connected.value || true) {
+    if (_networkConnectivityController.connected.value) {
       if (emailEditingController.text.isEmpty ||
           passwordEditingController.text.isEmpty) {
         if (emailEditingController.text.isEmpty) {

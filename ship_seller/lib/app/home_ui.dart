@@ -35,9 +35,9 @@ class _HomeUIState extends State<HomeUI> {
       homeController = Get.put(HomeController());
     }
 
-    homeController.init();
+    homeController.initForProfile();
 
-    selectedIndex = 2;
+    selectedIndex = 0;
 
     widgets = [
       DashboradUI(),
@@ -54,34 +54,35 @@ class _HomeUIState extends State<HomeUI> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Ship Seller', style: TextStyle(color: Color(white),)),
-        backgroundColor: Color(blue),
-      ),
-      body: Dashboard(),
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Color(blue),
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-            backgroundColor: Colors.red,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map_rounded),
-            label: 'Map',
-            backgroundColor: Colors.green,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-            backgroundColor: Colors.purple,
-          ),
-        ],
-        type: BottomNavigationBarType.fixed,
-        currentIndex: selectedIndex,
-        onTap: onItemTapped,
+    return SafeArea(
+      child: Scaffold(
+        // appBar: AppBar(
+        //   title: Text('Ship Seller', style: TextStyle(color: Color(white),)),
+        //   backgroundColor: Color(blue),
+        // ),
+        body: Dashboard(),
+        bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: Color(boxBlueHigh).withAlpha(50),
+          elevation: 0,
+          selectedItemColor: Color(blue),
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard),
+              label: 'Dashboard',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.map_rounded),
+              label: 'Map',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Profile',
+            ),
+          ],
+          type: BottomNavigationBarType.fixed,
+          currentIndex: selectedIndex,
+          onTap: onItemTapped,
+        ),
       ),
     );
   }

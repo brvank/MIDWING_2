@@ -35,6 +35,8 @@ dependencies:
   connectivity:
   flutter_svg:
   flutter_map:
+  url_launcher:
+  webview_flutter:
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -73,6 +75,9 @@ flutter:
       - assets/placeholder_map.svg
       - assets/error_map.svg
       - assets/waypoint.svg
+      - assets/placeholder_map.png
+      - assets/error_map.png
+      - assets/waypoint_red.svg
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
