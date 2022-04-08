@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:ship_seller/app/home_controller.dart';
 import 'package:ship_seller/app/single_order/single_order.dart';
 import 'package:ship_seller/app/single_order/track_webview.dart';
@@ -39,9 +40,11 @@ class _DashboradUIState extends State<DashboradUI> {
 
     if (homeController.orders.isEmpty) {
       homeController.getAllOrders().then((value){
-        setState(() {
+        if(mounted){
+          setState(() {
 
-        });
+          });
+        }
       });
     }
   }
@@ -51,7 +54,7 @@ class _DashboradUIState extends State<DashboradUI> {
     return Stack(
       children: [
         dashboard(),
-        Obx(() => homeController.orders.isEmpty
+        Obx(() => homeController.orders.isEmpty && !homeController.dLoading.value
             ? Positioned(
                 bottom: 16,
                 right: 16,
@@ -90,9 +93,7 @@ class _DashboradUIState extends State<DashboradUI> {
           flex: 1,
           child: Obx(() => homeController.dLoading.value
               ? Center(
-                  child: CircularProgressIndicator(
-                    color: Color(blue),
-                  ),
+              child: Lottie.asset('assets/animations/final_loading.json', width: 100, height: 100),
                 )
               : homeController.orders.isNotEmpty
                   ? orders()
@@ -103,18 +104,9 @@ class _DashboradUIState extends State<DashboradUI> {
   }
 
   Widget emptyList() {
-    return ListView.builder(
-        physics: NeverScrollableScrollPhysics(),
-        itemCount: 5,
-        itemBuilder: (context, index) {
-          return Container(
-            height: 80,
-            margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: Color(black).withAlpha(10)),
-          );
-        });
+    return Center(
+      child: Lottie.asset('assets/animations/final_loading.json', width: 100, height: 100),
+    );
   }
 
   Widget userNameHi() {
@@ -233,7 +225,7 @@ class _DashboradUIState extends State<DashboradUI> {
         ));
   }
 
-  Widget order(index) {
+  Widget order(int index) {
     return InkWell(
       onTap: (){
         Get.to(() => SingleOrderUI(order: homeController.orders[index]));
@@ -359,6 +351,7 @@ class _DashboradUIState extends State<DashboradUI> {
   Widget text(String title, String data) {
     if (data.length >= 15) {
       List<String> temp = data.split(' ');
+      temp.removeWhere((element) => element == ' ' || element.isEmpty);
 
       if (temp.length > 2) {
         data = '';
@@ -432,14 +425,21 @@ class _DashboradUIState extends State<DashboradUI> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           InkWell(
-            child: Container(
+            child: Obx(() => homeController.dLoading.value ? Container(
+              child: Icon(
+                Icons.arrow_back_ios_rounded,
+                color: Color(black).withAlpha(100),
+              ),
+            ) : Container(
               child: Icon(
                 Icons.arrow_back_ios_rounded,
                 color: Color(black),
               ),
-            ),
+            )),
             onTap: () {
-              getNextAlerts(false);
+              if (!homeController.dLoading.value) {
+                getNextAlerts(false);
+              }
             },
           ),
           Obx(() => Text(
@@ -448,11 +448,15 @@ class _DashboradUIState extends State<DashboradUI> {
                     TextStyle(color: Color(black).withAlpha(200), fontSize: 12),
               )),
           InkWell(
-            child: Container(
+            child: Obx(() => homeController.dLoading.value ? Container(
+              child: Icon(Icons.arrow_forward_ios_rounded, color: Color(black).withAlpha(100)),
+            ) : Container(
               child: Icon(Icons.arrow_forward_ios_rounded, color: Color(black)),
-            ),
+            )),
             onTap: () {
-              getNextAlerts(true);
+              if (!homeController.dLoading.value) {
+                getNextAlerts(true);
+              }
             },
           )
         ],
@@ -463,17 +467,9 @@ class _DashboradUIState extends State<DashboradUI> {
   void getNextAlerts(bool next) {
     if (networkConnectivityController.connected.value) {
       if (next) {
-        if (homeController.page.value < homeController.total.value) {
-          homeController.nextPage();
-        } else {
-          dialogBox('Error', 'Max page reached');
-        }
+        homeController.nextPage();
       } else {
-        if (homeController.page.value > 1) {
-          homeController.prevPage();
-        } else {
-          dialogBox('Error', 'Page should be greater than equal to 1');
-        }
+        homeController.prevPage();
       }
     } else {
       dialogBox('Error', 'No internet connection!');

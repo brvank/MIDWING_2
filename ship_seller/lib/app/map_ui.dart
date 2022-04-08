@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart' as ll;
+import 'package:lottie/lottie.dart' as lottie;
 import 'package:ship_seller/app/common_orders.dart';
 import 'package:ship_seller/app/dashboard_ui.dart';
 import 'package:ship_seller/app/home_controller.dart';
@@ -24,6 +25,8 @@ class _MapUIState extends State<MapUI> {
   late List<Marker> markers;
   late Image placeHolder, error;
   bool loading = false;
+  Set<String> cities = {};
+  double zoom = 3.0;
 
   @override
   void initState() {
@@ -46,48 +49,56 @@ class _MapUIState extends State<MapUI> {
   }
 
   Future<void> prepareMarkers() async {
-    setState(() {
-      loading = true;
-    });
-
-    homeController.latLngList.clear();
-
-    for(int i=0;i<homeController.orders.length;i++){
-
-      var response = await homeController.prepareLatLong(homeController.orders[i].city);
-
-      if(response != null){
-        try{
-          homeController.latLngList.add(response);
-
-
-        }catch(e){
-          print('error');
-          print(e.toString());
-        }
-      }
+    if(mounted){
+      setState(() {
+        loading = true;
+      });
     }
 
-    for (int i = 0; i < homeController.latLngList.length; i++) {
+    for(int i=0;i<homeController.orders.length;i++){
+      cities.add(homeController.orders[i].city);
+    }
+
+    if(homeController.dListStatus != homeController.mapStatus){
+      homeController.latLngList.clear();
+
+      for(int i=0;i<cities.length;i++){
+
+        var response = await homeController.prepareLatLong(cities.elementAt(i));
+
+        if(response != null){
+          try{
+            homeController.latLngList.add(response);
+          }catch(e){
+            print('error');
+            print(e.toString());
+          }
+        }
+      }
+      homeController.mapStatus++;
+      homeController.mapStatus = (homeController.mapStatus)%2;
+    }
+
+    for (int i = 0; i < cities.length; i++) {
       markers.add(Marker(
           point: homeController.latLngList[i],
           builder: (context) {
-            return InkWell(
-              child: Container(
-                child: SvgPicture.asset(
-                  'assets/waypoint.svg',
-                ),
+            return GestureDetector(
+              child: SvgPicture.asset(
+                'assets/waypoint.svg',
               ),
               onTap: () {
-                Get.to(CommonOrdersUI(city: homeController.orders[i].city));
+                Get.to(CommonOrdersUI(city: cities.elementAt(i)));
               },
             );
           }));
     }
 
-    setState(() {
-      loading = false;
-    });
+    if(mounted){
+      setState(() {
+        loading = false;
+      });
+    }
   }
 
   @override
@@ -100,11 +111,11 @@ class _MapUIState extends State<MapUI> {
           right: 16,
           top: 16,
         ),
+        loading ? Container(width: Get.width, height: Get.height, color: Colors.white,) : SizedBox(),
         loading
             ? Center(
-                child: CircularProgressIndicator(
-                color: Color(blue),
-              ))
+          child: lottie.Lottie.asset('assets/animations/map_loading.json', width: 100, height: 100),
+        )
             : SizedBox()
       ],
     );
@@ -113,8 +124,8 @@ class _MapUIState extends State<MapUI> {
   Widget compass() {
     BorderSide borderSide = BorderSide(color: Color(white), width: 2);
     return InkWell(
-      onTap: () {
-        mapController.moveAndRotate(ll.LatLng(28.7041, 77.1025), 5.0, 0);
+      onTap: (){
+        mapController.moveAndRotate(ll.LatLng(28.7041, 77.1025), zoom, 0);
       },
       child: Container(
           width: 32,
@@ -140,7 +151,7 @@ class _MapUIState extends State<MapUI> {
     return FlutterMap(
       options: MapOptions(
         center: ll.LatLng(28.7041, 77.1025),
-        zoom: 5.0,
+        zoom: zoom,
       ),
       mapController: mapController,
       layers: [

@@ -221,9 +221,11 @@ class _LoginPageUIState extends State<LoginPageUI> {
 
   void login() async {
 
-    setState((){
-      buttonColor = Color(blue).withAlpha(100);
-    });
+    if(mounted){
+      setState((){
+        buttonColor = Color(blue).withAlpha(100);
+      });
+    }
 
     if (_networkConnectivityController.connected.value) {
       if (emailEditingController.text.isEmpty ||

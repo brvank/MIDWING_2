@@ -37,7 +37,7 @@ class _ProfileUIState extends State<ProfileUI> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => homeController.loading.value ? Center(
+    return Obx(() => homeController.pLoading.value ? Center(
       child: CircularProgressIndicator(
         color: Colors.red,
         strokeWidth: 5,

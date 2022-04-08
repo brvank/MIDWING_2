@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ship_seller/authorization/login_page_ui.dart';
 import 'package:ship_seller/app/home_ui.dart';
@@ -13,15 +14,12 @@ void main() {
   runApp(shipSeller());
 }
 
-class NetworkConnectivityBinding extends Bindings{
-
+class NetworkConnectivityBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<NetworkConnectivityController>(() => NetworkConnectivityController());
-
+    Get.lazyPut<NetworkConnectivityController>(
+        () => NetworkConnectivityController());
   }
-
-
 }
 
 class shipSeller extends StatefulWidget {
@@ -65,12 +63,13 @@ class _SplashScreenState extends State<SplashScreen> {
       var token = preferences.getString(TOKEN);
 
       if (token != null) {
-        if(mounted){
+        if (mounted) {
           Get.offAll(HomeUI());
         }
       } else {
         if (mounted) {
-          Get.offAll(LoginPageUI(), transition: Transition.fadeIn, duration: Duration(seconds: 1));
+          Get.offAll(LoginPageUI(),
+              transition: Transition.fadeIn, duration: Duration(seconds: 1));
         }
       }
     } catch (e) {

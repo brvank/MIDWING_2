@@ -21,7 +21,7 @@ class SingleOrderUI extends StatefulWidget {
 
 class _SingleOrderUIState extends State<SingleOrderUI> {
   late HomeController homeController;
-  late String url;
+  late var url;
 
   bool loading = false;
   late ll.LatLng latLng1, latLng2;
@@ -41,25 +41,33 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
   }
 
   Future<void> getLatLong() async {
-    setState(() {
-      loading = true;
-    });
+    if (mounted) {
+      setState(() {
+        loading = true;
+      });
+    }
 
     var response = await homeController.prepareLatLong(widget.order.city);
     if (response != null) {
       latLng1 = response;
+    }else{
+      latLng1 = ll.LatLng(28.7041, 77.1025);
     }
 
     response = await homeController.prepareLatLong(widget.order.pickup.city);
     if (response != null) {
       latLng2 = response;
+    }else{
+      latLng1 = ll.LatLng(25.3176, 82.9739);
     }
 
     url = await homeController.track();
 
-    setState(() {
-      loading = false;
-    });
+    if(mounted){
+      setState(() {
+        loading = false;
+      });
+    }
   }
 
   @override

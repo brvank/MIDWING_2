@@ -41,7 +41,9 @@ class _MapUIState extends State<SingleOrderMapUI> {
                   child: SvgPicture.asset('assets/waypoint.svg'),
                 )));
       }
-      setState(() {});
+      if(mounted){
+        setState(() {});
+      }
     });
   }
 

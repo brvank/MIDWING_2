@@ -9,11 +9,11 @@ import 'package:ship_seller/utils/widgets.dart';
 import 'package:latlong2/latlong.dart' as ll;
 
 class HomeController extends GetxController {
-  var loading = false.obs;
+  var pLoading = false.obs;
   String name = '', email = '';
 
   Future<void> initForProfile() async {
-    loading.value = true;
+    pLoading.value = true;
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? first = sharedPreferences.getString(FIRST_NAME);
     String? last = sharedPreferences.getString(LAST_NAME);
@@ -30,7 +30,7 @@ class HomeController extends GetxController {
     } else {
       email = '---';
     }
-    loading.value = false;
+    pLoading.value = false;
   }
 
   //for orders
@@ -41,47 +41,60 @@ class HomeController extends GetxController {
   var filteredOrders = <Order>[].obs;
   var dLoading = false.obs;
   var dError = false.obs;
-  var page = 0.obs;
+  var page = 1.obs;
   var total = 0.obs;
 
+  var dListStatus = 0;
+  var mapStatus = 0;
+
   void nextPage() {
-    page++;
+    if(page.value >= total.value){
+      page.value = 1;
+    }else{
+      page++;
+    }
     getAllOrders();
   }
 
   void prevPage() {
-    page--;
+    if(page.value <= 1){
+      page.value = total.value;
+    }else{
+      page--;
+    }
     getAllOrders();
   }
 
   Future<void> filterOrders(String city) async {
     filteredOrders.clear();
 
-    filteredOrders.value = orders.where((p0){
+    filteredOrders.value = orders.where((p0) {
       return p0.city == city;
     }).toList();
   }
 
   Future<void> getAllOrders() async {
-
-    if(dLoading.value) return;
+    if (dLoading.value) return;
 
     orders.clear();
     dLoading.value = true;
     dError.value = false;
 
     try {
+      await Future.delayed(Duration(seconds: 1));
       dio.Response response = await homeNetworking.getAllOrders(page.value);
       if (response.statusCode == 200) {
         page.value = response.data['meta']['pagination']['current_page'];
-        total.value = response.data['meta']['pagination']['total'];
+        total.value = response.data['meta']['pagination']['total_pages'];
 
         int len = response.data['data'].length;
 
         for (int i = 0; i < len; i++) {
           orders.add(createOrder(response.data['data'][i]));
-          print(orders[i]);
         }
+
+        dListStatus++;
+        dListStatus = dListStatus%2;
       }
     } on dio.DioError catch (e) {
       if (e.response!.statusCode == 401) {
@@ -99,12 +112,15 @@ class HomeController extends GetxController {
   }
 
   Order createOrder(var response) {
-    print('order');
     int id = response['id'] ?? 0;
     int channelId = response['channel_id'] ?? 0;
     String custName = response['customer_name'] ?? '---';
     String custPhone = response['customer_phone'] ?? '---';
-    List<String> latLngList = response['customer_address'].toString().split(' ');
+    if (response['customer_address'] == null) {
+      response['customer_address'] = [];
+    }
+    List<String> latLngList =
+        response['customer_address'].toString().split(' ');
     String addr = '';
     for (int i = 0; i < 2; i++) {
       if (i < latLngList.length) {
@@ -114,12 +130,11 @@ class HomeController extends GetxController {
         continue;
       }
     }
-    print(latLngList.length);
-    print(addr);
     String city = response['customer_city'] ?? '---';
     String state = response['customer_state'] ?? '---';
     String paymentStatus = response['payment_status'] ?? '---';
-    String deliveredDate = response['delivered_date'] == null ? 'ON WAY' : 'DELIVERED';
+    String deliveredDate =
+        response['delivered_date'] == null ? 'ON WAY' : 'DELIVERED';
     String paymentMethod = response['payment_method'] ?? 'COD';
     Product product = createProduct(response['products'][0]);
     Pickup pickup = createPickup(response['pickup_address_detail']);
@@ -140,15 +155,22 @@ class HomeController extends GetxController {
   }
 
   Product createProduct(var response) {
+    if (response == null || response.length == 0) {
+      response[0] = [
+        {'id': 123456, 'name': 'Product', 'status': 'DELIVERED'}
+      ];
+    }
     Product product = Product(
-        id: response['id'] ?? 0, name: response['name'] ?? '---', status: response['status'] ?? '---');
+        id: response['id'] ?? 0,
+        name: response['name'] ?? '---',
+        status: response['status'] ?? '---');
     return product;
   }
 
   Pickup createPickup(var response) {
-    print('pickup');
     int id = response['id'] ?? 0;
-    List<String> latLngList = response['customer_address'].toString().split(' ');
+    List<String> latLngList =
+        response['customer_address'].toString().split(' ');
     String addr = '';
     for (int i = 0; i < 2; i++) {
       if (i < latLngList.length) {
@@ -158,15 +180,21 @@ class HomeController extends GetxController {
         continue;
       }
     }
-    print(latLngList.length);
-    print(addr);
     String city = response['city'] ?? '---';
     String state = response['state'] ?? '---';
     String country = response['country'] ?? '---';
     String pincode = response['pin_code'] ?? '---';
     String delvName = response['delvName'] ?? '---';
     String delvPhone = response['delvPhone'] ?? '---';
-    Pickup pickup = Pickup(id: id, address: addr, city: city, state: state, country: country, pincode: pincode, delvName: delvName, delvPhone: delvPhone);
+    Pickup pickup = Pickup(
+        id: id,
+        address: addr,
+        city: city,
+        state: state,
+        country: country,
+        pincode: pincode,
+        delvName: delvName,
+        delvPhone: delvPhone);
     return pickup;
   }
 
@@ -174,8 +202,7 @@ class HomeController extends GetxController {
   Future<void> logout() async {
     loadingWidget('Logging out...');
     await Future.delayed(Duration(seconds: 1));
-    SharedPreferences sharedPreferences =
-    await SharedPreferences.getInstance();
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     await sharedPreferences.clear();
     Get.offAll(LoginPageUI());
   }
@@ -184,37 +211,60 @@ class HomeController extends GetxController {
   var latLngList = <ll.LatLng>[].obs;
 
   Future<dynamic> prepareLatLong(String city) async {
-    try{
-          dio.Response response = await homeNetworking.getLatLong(city);
+    try {
+      dio.Response response = await homeNetworking.getLatLong(city);
 
-          if(response.data['data'].isNotEmpty){
-            var temp = response.data['data'][0];
-            ll.LatLng latLng = ll.LatLng(temp['latitude'], temp['longitude']);
-            return latLng;
-          }
-        }catch(e){
-          return;
-        }
+      if (response.data['data'].isNotEmpty) {
+        var temp = response.data['data'][0];
+        ll.LatLng latLng = ll.LatLng(temp['latitude'], temp['longitude']);
+        return latLng;
+      }
+    } catch (e) {
+      return;
+    }
   }
 
   //tracking data
   Future<dynamic> track() async {
-
-    try{
+    try {
       dio.Response response = await homeNetworking.track();
 
-      if(response.data.isNotEmpty){
+      if (response.data.isNotEmpty) {
         String temp = response.data['tracking_data']['track_url'];
         return temp;
-      }else{
+      } else {
         return;
       }
-    }catch(e){
+    } catch (e) {
       print('error');
       print(e.toString());
       return;
     }
-
   }
+}
 
+class SafeValues {
+  static Pickup pickup = Pickup(
+      id: 123,
+      address: 'Sector 3A',
+      city: 'Varanasi',
+      state: 'Uttar Pradesh',
+      country: 'India',
+      pincode: '221004',
+      delvName: 'John David',
+      delvPhone: '9876543210');
+  static Product product = Product(id: 456, name: 'Box', status: 'status');
+  static Order order = Order(
+      id: 789,
+      channelId: 1234321,
+      custName: 'Frady Dam',
+      custPhone: '9854763210',
+      addr: 'Sector 16A',
+      city: 'Gorakhpur',
+      state: 'Uttar Pradesh',
+      paymentStatus: 'Pending',
+      deliveredDate: '30/04/2022',
+      paymentMethod: 'COD',
+      product: product,
+      pickup: pickup);
 }

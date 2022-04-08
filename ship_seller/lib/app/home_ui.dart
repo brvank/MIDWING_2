@@ -47,9 +47,11 @@ class _HomeUIState extends State<HomeUI> {
   }
 
   void onItemTapped(index){
-    setState(() {
-      selectedIndex = index;
-    });
+    if(mounted){
+      setState(() {
+        selectedIndex = index;
+      });
+    }
   }
 
   @override
