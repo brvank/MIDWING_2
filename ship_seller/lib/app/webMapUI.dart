@@ -14,14 +14,14 @@ import 'package:ship_seller/utils/colors_themes.dart';
 import 'package:ship_seller/utils/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class MapUI extends StatefulWidget {
-  const MapUI({Key? key}) : super(key: key);
+class WebMapUI extends StatefulWidget {
+  const WebMapUI({Key? key}) : super(key: key);
 
   @override
-  State<MapUI> createState() => _MapUIState();
+  State<WebMapUI> createState() => _WebMapUIState();
 }
 
-class _MapUIState extends State<MapUI> {
+class _WebMapUIState extends State<WebMapUI> {
   late HomeController homeController;
   // late Image placeHolder, error;
   double zoom = 3.0;
@@ -44,11 +44,13 @@ class _MapUIState extends State<MapUI> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => homeController.mLoading.value
-        ? loading()
-        : homeController.mError.value
-            ? error()
-            : mapContainer());
+    WidgetsBinding.instance
+        ?.addPostFrameCallback((_){
+      setState(() {
+
+      });
+    });
+    return mapContainer();
   }
 
   Widget mapContainer() {
@@ -62,9 +64,14 @@ class _MapUIState extends State<MapUI> {
         ),
         Positioned(
           bottom: 16,
-            right: 16,
-            child: zoomControl(),
-        )
+          right: 16,
+          child: zoomControl(),
+        ),
+        Obx(() => homeController.mLoading.value
+            ? loading()
+            : homeController.mError.value
+            ? error()
+            : SizedBox())
       ],
     );
   }
@@ -96,7 +103,7 @@ class _MapUIState extends State<MapUI> {
   Widget compass() {
     BorderSide borderSide = BorderSide(color: Color(white), width: 2);
     return Container(
-      padding: EdgeInsets.all(4),
+        padding: EdgeInsets.all(4),
         alignment: Alignment.center,
         child: InkWell(
           child: Icon(
@@ -186,10 +193,10 @@ class _MapUIState extends State<MapUI> {
           backgroundColor: Color(blue).withAlpha(50),
           keepBuffer: 0,
           urlTemplate:
-              "https://api.mapbox.com/styles/v1/stsanary/cl18s6nki001w14pll3kthqdt/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1Ijoic3RzYW5hcnkiLCJhIjoiY2wxOHNrNnBjMGd6dzNqbW14dXV3ODM4ZCJ9.oyjCkxkSVs59i_jyMndOqQ",
+          "https://api.mapbox.com/styles/v1/stsanary/cl18s6nki001w14pll3kthqdt/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1Ijoic3RzYW5hcnkiLCJhIjoiY2wxOHNrNnBjMGd6dzNqbW14dXV3ODM4ZCJ9.oyjCkxkSVs59i_jyMndOqQ",
           additionalOptions: {
             'accessToken':
-                'pk.eyJ1Ijoic3RzYW5hcnkiLCJhIjoiY2wxOHNrNnBjMGd6dzNqbW14dXV3ODM4ZCJ9.oyjCkxkSVs59i_jyMndOqQ',
+            'pk.eyJ1Ijoic3RzYW5hcnkiLCJhIjoiY2wxOHNrNnBjMGd6dzNqbW14dXV3ODM4ZCJ9.oyjCkxkSVs59i_jyMndOqQ',
             'id': 'mapbox.mapbox-streets-v8'
           },
         ),

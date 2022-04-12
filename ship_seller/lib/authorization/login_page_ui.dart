@@ -7,6 +7,7 @@ import 'package:ship_seller/app/home_ui.dart';
 import 'package:ship_seller/authorization/login_page_controller.dart';
 import 'package:ship_seller/services/connectivity.dart';
 import 'package:ship_seller/utils/colors_themes.dart';
+import 'package:ship_seller/utils/constants.dart';
 import 'package:ship_seller/utils/widgets.dart';
 
 class LoginPageUI extends StatefulWidget {
@@ -49,12 +50,73 @@ class _LoginPageUIState extends State<LoginPageUI> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: loginForm(),
+        backgroundColor: Color(yellow).withAlpha(20),
+        body: MediaQuery.of(context).size.width <= webRefWidth ? loginFormMobile() : loginFormWeb(),
       ),
     );
   }
 
-  Widget loginForm() {
+  Widget loginFormWeb(){
+    return Row(
+      children: [
+        Expanded(flex: 3, child: Column(
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                logo(),
+                appName(),
+              ],
+            ),
+            loginImage(),
+          ],
+        ),),
+        Expanded(flex: 2, child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            loginMessage(),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 64, vertical: 16),
+              child: Material(
+                color: Color(blueBg),
+                shadowColor: Color(blue),
+                elevation: 4,
+                borderRadius: BorderRadius.circular(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: 24,),
+                    emailInputField(),
+                    passwordInputField(),
+                    loginButton()
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),)
+      ],
+    );
+  }
+
+  Widget loginMessage(){
+    return Container(
+      margin: EdgeInsets.all(16),
+      child: Text(
+        'Please Login',
+        style: TextStyle(
+          color: Color(blue),
+          fontSize: 24,
+          shadows: [
+            Shadow(color: Color(blue).withAlpha(100), offset: Offset(1,1), blurRadius: 2)
+          ]
+          // decoration: TextDecoration.underline
+        ),
+      ),
+    );
+  }
+
+  Widget loginFormMobile() {
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -71,9 +133,9 @@ class _LoginPageUIState extends State<LoginPageUI> {
 
   Widget logo() {
     return Container(
-      width: 50,
-      height: 50,
-      margin: EdgeInsets.only(left: 16, right: 16, top: 16),
+      width: 80,
+      height: 80,
+      margin: EdgeInsets.all(16),
       alignment: Alignment.center,
       child: SvgPicture.asset('assets/logo.svg'),
     );
@@ -81,16 +143,16 @@ class _LoginPageUIState extends State<LoginPageUI> {
 
   Widget appName() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       alignment: Alignment.center,
       child:FittedBox(
         child:  Text(
           'Ship Seller',
           textAlign: TextAlign.center,
           style: TextStyle(
-              color: Color(blue).withAlpha(100),
-              fontSize: 24,
-              fontWeight: FontWeight.bold),
+              color: Color(blue),
+              fontSize: MediaQuery.of(context).size.width > webRefWidth ? 32 : 24,
+              ),
         ),
       ),
     );
@@ -243,12 +305,12 @@ class _LoginPageUIState extends State<LoginPageUI> {
           if (loginPageController.message.isEmpty) {
             Get.offAll(HomeUI());
           } else {
-            dialogBox('Error', loginPageController.message);
+            alertBox('Error', loginPageController.message);
           }
         });
       }
     } else {
-      dialogBox('No Internet', 'Please check your internet connection!');
+      alertBox('No Internet', 'Please check your internet connection!');
     }
 
     if(mounted){

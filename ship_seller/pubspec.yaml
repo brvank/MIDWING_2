@@ -73,6 +73,9 @@ flutter:
     - assets/
     - assets/animations/final_loading.json
     - assets/animations/map_loading.json
+    - assets/animations/final_error.json
+    - assets/animations/error_red.json
+    - assets/animations/please_select.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

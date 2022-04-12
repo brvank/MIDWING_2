@@ -1,7 +1,13 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ship_seller/app/common_cum_single_order.dart';
+import 'package:ship_seller/app/common_orders.dart';
 import 'package:ship_seller/app/home_networking.dart';
+import 'package:ship_seller/app/single_order/single_order.dart';
 import 'package:ship_seller/authorization/login_page_ui.dart';
 import 'package:ship_seller/utils/constants.dart';
 import 'package:ship_seller/utils/models/order.dart';
@@ -11,6 +17,8 @@ import 'package:latlong2/latlong.dart' as ll;
 class HomeController extends GetxController {
   var pLoading = false.obs;
   String name = '', email = '';
+
+  var selectedOrder = (-1).obs;
 
   Future<void> initForProfile() async {
     pLoading.value = true;
@@ -41,25 +49,24 @@ class HomeController extends GetxController {
   var filteredOrders = <Order>[].obs;
   var dLoading = false.obs;
   var dError = false.obs;
-  var page = 1.obs;
+  var page = 0.obs;
   var total = 0.obs;
 
   var dListStatus = 0;
-  var mapStatus = 0;
 
   void nextPage() {
-    if(page.value >= total.value){
+    if (page.value >= total.value) {
       page.value = 1;
-    }else{
+    } else {
       page++;
     }
     getAllOrders();
   }
 
   void prevPage() {
-    if(page.value <= 1){
+    if (page.value <= 1) {
       page.value = total.value;
-    }else{
+    } else {
       page--;
     }
     getAllOrders();
@@ -77,12 +84,14 @@ class HomeController extends GetxController {
     if (dLoading.value) return;
 
     orders.clear();
+    mLoading.value = true;
     dLoading.value = true;
     dError.value = false;
 
     try {
       await Future.delayed(Duration(seconds: 1));
-      dio.Response response = await homeNetworking.getAllOrders(page.value);
+      int p = page.value == 0 ? 1 : page.value;
+      dio.Response response = await homeNetworking.getAllOrders(p);
       if (response.statusCode == 200) {
         page.value = response.data['meta']['pagination']['current_page'];
         total.value = response.data['meta']['pagination']['total_pages'];
@@ -93,13 +102,19 @@ class HomeController extends GetxController {
           orders.add(createOrder(response.data['data'][i]));
         }
 
-        dListStatus++;
-        dListStatus = dListStatus%2;
+        if (dListStatus == mapStatus) {
+          dListStatus++;
+          dListStatus = dListStatus % 2;
+        }
       }
     } on dio.DioError catch (e) {
-      if (e.response!.statusCode == 401) {
-        logout();
-      } else {
+      try {
+        if (e.response!.statusCode == 401) {
+          logout();
+        } else {
+          dError.value = true;
+        }
+      } catch (e) {
         dError.value = true;
       }
     } catch (e) {
@@ -109,6 +124,7 @@ class HomeController extends GetxController {
     }
 
     dLoading.value = false;
+    prepareForMap();
   }
 
   Order createOrder(var response) {
@@ -220,7 +236,7 @@ class HomeController extends GetxController {
         return latLng;
       }
     } catch (e) {
-      return;
+      return null;
     }
   }
 
@@ -239,6 +255,88 @@ class HomeController extends GetxController {
       print('error');
       print(e.toString());
       return;
+    }
+  }
+
+  //for map page
+
+  late MapController mapController;
+  List<Marker> markers = <Marker>[].obs;
+  var mLoading = false.obs;
+  var mError = false.obs;
+  Set<String> cities = <String>{}.obs;
+  var mapStatus = 0;
+
+  Future<void> prepareForMap() async {
+    mLoading.value = true;
+    mError.value = false;
+
+    cities.clear();
+    markers.clear();
+
+    //preparing list of unique locations
+    for (int i = 0; i < orders.length; i++) {
+      cities.add(orders[i].city);
+    }
+
+    if (dListStatus != mapStatus) {
+      latLngList.clear();
+
+      for (int i = 0; i < cities.length; i++) {
+        try {
+          var response = await prepareLatLong(cities.elementAt(i));
+
+          if (response != null) {
+            try {
+              latLngList.add(response);
+            } catch (e) {
+              mError.value = true;
+              print('error');
+              print(e.toString());
+            }
+          }
+          if (mError.value) break;
+        } catch (e) {
+          mError.value = true;
+          print('error map');
+          print(e.toString());
+        }
+      }
+      if (!mError.value) {
+        mapStatus++;
+        mapStatus = (mapStatus) % 2;
+      }
+    } else {
+      if (dError.value) mError.value = true;
+    }
+    print(latLngList.value);
+
+    if (!mError.value) {
+      for (int i = 0; i < latLngList.length; i++) {
+        markers.add(Marker(
+            point: latLngList[i],
+            builder: (context) {
+              return MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  child: SvgPicture.asset(
+                    'assets/waypoint.svg',
+                  ),
+                  onTap: () {
+                    if(MediaQuery.of(context).size.width > webRefWidth){
+                      Get.to(CommonSingleOrderUI(city: cities.elementAt(i),));
+                    }else{
+                      Get.to(CommonOrdersUI(city: cities.elementAt(i)));
+                    }
+                  },
+                ),
+              );
+            }));
+      }
+    }
+
+    if (!dLoading.value) {
+      mLoading.value = false;
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ship_seller/app/home_controller.dart';
@@ -22,13 +23,13 @@ class SingleOrderUI extends StatefulWidget {
 class _SingleOrderUIState extends State<SingleOrderUI> {
   late HomeController homeController;
   late var url;
+  int id = 0;
 
-  bool loading = false;
+  bool loading = false, error = false;
   late ll.LatLng latLng1, latLng2;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     try {
@@ -38,32 +39,40 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
     }
 
     getLatLong();
+    print('single order page ');
+    print(widget.order.addr);
   }
 
   Future<void> getLatLong() async {
+    id = widget.order.id;
     if (mounted) {
       setState(() {
         loading = true;
+        error = false;
       });
     }
 
     var response = await homeController.prepareLatLong(widget.order.city);
     if (response != null) {
       latLng1 = response;
-    }else{
+    } else {
       latLng1 = ll.LatLng(28.7041, 77.1025);
     }
 
     response = await homeController.prepareLatLong(widget.order.pickup.city);
     if (response != null) {
       latLng2 = response;
-    }else{
-      latLng1 = ll.LatLng(25.3176, 82.9739);
+    } else {
+      latLng2 = ll.LatLng(25.3176, 82.9739);
     }
 
-    url = await homeController.track();
+    try {
+      url = await homeController.track();
+    } catch (e) {
+      error = true;
+    }
 
-    if(mounted){
+    if (mounted) {
       setState(() {
         loading = false;
       });
@@ -72,6 +81,13 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
 
   @override
   Widget build(BuildContext context) {
+
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      if(widget.order.id != id){
+        getLatLong();
+      }
+    });
+
     return SafeArea(
       child: Scaffold(body: singleOrder()),
     );
@@ -79,10 +95,10 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
 
   Widget singleOrder() {
     return Column(
-        children: [productId(), map(), Expanded(flex: 1, child: details())]);
+        children: [orderId(), map(), Expanded(flex: 1, child: details())]);
   }
 
-  Widget productId() {
+  Widget orderId() {
     return Container(
       alignment: Alignment.centerLeft,
       margin: EdgeInsets.all(16),
@@ -92,7 +108,7 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
           Container(
             margin: EdgeInsets.symmetric(vertical: 4),
             child: Text(
-              'Order #' + widget.order.product.id.toString(),
+              'Order #' + widget.order.id.toString(),
               style: TextStyle(
                   color: Color(black),
                   fontSize: 24,
@@ -113,8 +129,8 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
   Widget map() {
     return Container(
       margin: EdgeInsets.all(16),
-      width: min(Get.width, Get.height) * (0.8),
-      height: min(Get.width, Get.height) * (0.8),
+      width: Get.height * (0.4),
+      height: Get.height * (0.4),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           color: Color(white),
@@ -203,18 +219,22 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
 
   Widget tractThisOrder() {
     return TextButton(
-        onPressed: () {
+        onPressed: () async {
           if (url != null) {
             if (url.isNotEmpty) {
-              Get.to(TrackWebViewUI(url: url));
+              if (kIsWeb) {
+                await launch(url);
+              } else {
+                Get.to(TrackWebViewUI(url: url));
+              }
             } else {
-              dialogBox('Error', 'Tracking details not available!');
+              alertBox('Error', 'Tracking details not available!');
             }
           } else {
-            dialogBox('Error', 'Tracking details not available!');
+            alertBox('Error', 'Tracking details not available!');
           }
         },
-        child: loading ? Text('---', style: TextStyle(color: Colors.grey),) : Text(
+        child: loading || error ? Text('---', style: TextStyle(color: Colors.grey),) : Text(
           'Track Order',
           style: TextStyle(
               color: Color(blue),

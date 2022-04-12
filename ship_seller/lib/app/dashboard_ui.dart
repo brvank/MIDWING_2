@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,6 +9,7 @@ import 'package:ship_seller/app/single_order/single_order.dart';
 import 'package:ship_seller/app/single_order/track_webview.dart';
 import 'package:ship_seller/services/connectivity.dart';
 import 'package:ship_seller/utils/colors_themes.dart';
+import 'package:ship_seller/utils/constants.dart';
 import 'package:ship_seller/utils/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -39,11 +42,9 @@ class _DashboradUIState extends State<DashboradUI> {
     }
 
     if (homeController.orders.isEmpty) {
-      homeController.getAllOrders().then((value){
-        if(mounted){
-          setState(() {
-
-          });
+      homeController.getAllOrders().then((value) {
+        if (mounted) {
+          setState(() {});
         }
       });
     }
@@ -54,58 +55,70 @@ class _DashboradUIState extends State<DashboradUI> {
     return Stack(
       children: [
         dashboard(),
-        Obx(() => homeController.orders.isEmpty && !homeController.dLoading.value
-            ? Positioned(
-                bottom: 16,
-                right: 16,
-                child: InkWell(
-                  onTap: () {
-                    if (networkConnectivityController.connected.value) {
-                      homeController.getAllOrders();
-                    } else {
-                      dialogBox('Error', 'No internet connection!');
-                    }
-                  },
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle, color: Color(white)),
-                    child: Icon(
-                      Icons.refresh,
-                      color: Color(blue),
+        Obx(() =>
+            homeController.orders.isEmpty && !homeController.dLoading.value
+                ? Positioned(
+                    bottom: 16,
+                    right: 16,
+                    child: InkWell(
+                      onTap: () {
+                        if (networkConnectivityController.connected.value) {
+                          homeController.getAllOrders();
+                        } else {
+                          alertBox('Error', 'No internet connection!');
+                        }
+                      },
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle, color: Color(white)),
+                        child: Icon(
+                          Icons.refresh,
+                          color: Color(blue),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              )
-            : SizedBox())
+                  )
+                : SizedBox())
       ],
     );
   }
 
   Widget dashboard() {
+    double dimension = min(Get.width, Get.height) / 4;
+
     return Column(
       children: [
-        userNameHi(),
-        countBlocks(),
+        MediaQuery.of(context).size.width > webRefWidth
+            ? SizedBox()
+            : userNameHi(),
+        Obx(() => countBlocks()),
         allOrdersAndPage(),
         Expanded(
           flex: 1,
           child: Obx(() => homeController.dLoading.value
               ? Center(
-              child: Lottie.asset('assets/animations/final_loading.json', width: 100, height: 100),
+                  child: Lottie.asset('assets/animations/final_loading.json',
+                      width: dimension, height: dimension),
                 )
               : homeController.orders.isNotEmpty
                   ? orders()
-                  : emptyList()),
+                  : error()),
         ),
       ],
     );
   }
 
-  Widget emptyList() {
-    return Center(
-      child: Lottie.asset('assets/animations/final_loading.json', width: 100, height: 100),
+  Widget error() {
+    double dimension = min(Get.width, Get.height) / 6;
+
+    return Container(
+      color: Colors.white,
+      child: Center(
+        child: Lottie.asset('assets/animations/final_error.json',
+            width: dimension, height: dimension),
+      ),
     );
   }
 
@@ -128,7 +141,7 @@ class _DashboradUIState extends State<DashboradUI> {
           ),
           Container(
             margin: EdgeInsets.symmetric(vertical: 4),
-            width: Get.width*(0.5),
+            width: Get.width * (0.5),
             height: 4,
             color: Color(black).withOpacity(0.3),
           )
@@ -140,12 +153,23 @@ class _DashboradUIState extends State<DashboradUI> {
   Widget countBlocks() {
     return Container(
       margin: EdgeInsets.all(16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      child: Wrap(
         children: [
           block('orders in count', homeController.orders.length, boxBlueLow),
-          block('orders on way', homeController.orders.where((p0) => p0.deliveredDate == 'ON WAY').toList().length, boxBlueMedium),
-          block('orders delivered', homeController.orders.where((p0) => p0.deliveredDate != 'ON WAY').toList().length, boxBlueHigh),
+          block(
+              'orders on way',
+              homeController.orders
+                  .where((p0) => p0.deliveredDate == 'ON WAY')
+                  .toList()
+                  .length,
+              boxBlueMedium),
+          block(
+              'orders delivered',
+              homeController.orders
+                  .where((p0) => p0.deliveredDate != 'ON WAY')
+                  .toList()
+                  .length,
+              boxBlueHigh),
         ],
       ),
     );
@@ -153,34 +177,41 @@ class _DashboradUIState extends State<DashboradUI> {
 
   Widget block(String title, int count, int color) {
     return Obx(() => Container(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-          color: Color(color),
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: Color(color).withAlpha(50),
-              blurRadius: 5,
-              spreadRadius: 1,
-              offset: Offset(0, 2),
-            )
+      margin: EdgeInsets.all(4),
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+              color: Color(color),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(color).withAlpha(50),
+                  blurRadius: 5,
+                  spreadRadius: 1,
+                  offset: Offset(0, 2),
+                )
+              ]),
+          child: Column(children: [
+            homeController.dLoading.value
+                ? Text(
+                    '---',
+                    style: TextStyle(
+                        color: Color(white),
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold),
+                  )
+                : Text(
+                    count.toString(),
+                    style: TextStyle(
+                        color: Color(white),
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold),
+                  ),
+            Text(
+              title,
+              style: TextStyle(color: Color(white), fontSize: 12),
+            ),
           ]),
-      child: Column(children: [
-        homeController.dLoading.value ? Text(
-          '---',
-          style: TextStyle(
-              color: Color(white), fontSize: 14, fontWeight: FontWeight.bold),
-        ) : Text(
-          count.toString(),
-          style: TextStyle(
-              color: Color(white), fontSize: 14, fontWeight: FontWeight.bold),
-        ),
-        Text(
-          title,
-          style: TextStyle(color: Color(white), fontSize: 12),
-        ),
-      ]),
-    ));
+        ));
   }
 
   Widget allOrdersAndPage() {
@@ -212,7 +243,7 @@ class _DashboradUIState extends State<DashboradUI> {
             if (networkConnectivityController.connected.value) {
               homeController.getAllOrders();
             } else {
-              dialogBox('Error', 'No internet connection!');
+              alertBox('Error', 'No internet connection!');
             }
           },
           child: ListView.builder(
@@ -227,123 +258,129 @@ class _DashboradUIState extends State<DashboradUI> {
 
   Widget order(int index) {
     return InkWell(
-      onTap: (){
+      onTap: () {
         Get.to(() => SingleOrderUI(order: homeController.orders[index]));
       },
-      child: Container(
-        height: 100,
-        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-        child: Stack(children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 14,
-            child: Container(
-              alignment: Alignment.centerLeft,
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(8),
-                      bottomLeft: Radius.circular(8)),
-                  color: Color(white),
-                  boxShadow: [
-                    BoxShadow(
-                        offset: Offset(0, -2),
-                        blurRadius: 2,
-                        spreadRadius: 1,
-                        color: Color(black).withAlpha(50))
-                  ]),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  text('Id', homeController.orders[index].id.toString()),
-                  SizedBox(
-                    height: 4,
+      child: LayoutBuilder(
+        builder: (context, size){
+          return Container(
+            height: 100,
+            margin: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+            child: Stack(children: [
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 14,
+                child: Container(
+                  alignment: Alignment.centerLeft,
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(8),
+                          bottomLeft: Radius.circular(8)),
+                      color: Color(white),
+                      boxShadow: [
+                        BoxShadow(
+                            offset: Offset(0, -2),
+                            blurRadius: 2,
+                            spreadRadius: 1,
+                            color: Color(black).withAlpha(50))
+                      ]),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      text('Id', homeController.orders[index].id.toString()),
+                      SizedBox(
+                        height: 4,
+                      ),
+                      text('Product', homeController.orders[index].product.name),
+                      SizedBox(
+                        height: 4,
+                      ),
+                      text('Customer', homeController.orders[index].custName),
+                    ],
                   ),
-                  text('Product', homeController.orders[index].product.name),
-                  SizedBox(
-                    height: 4,
-                  ),
-                  text('Customer', homeController.orders[index].custName),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 14,
-            child: ClipPath(
-              clipper: SectionClipper(),
-              child: Container(
-                alignment: Alignment.centerRight,
-                decoration: BoxDecoration(color: Color(boxBlueHigh), boxShadow: [
-                  BoxShadow(
-                      offset: Offset(0, -2),
-                      blurRadius: 2,
-                      spreadRadius: 1,
-                      color: Color(black).withAlpha(50))
-                ]),
-                padding: EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    iconText(homeController.orders[index].paymentMethod,
-                        Icons.attach_money_rounded),
-                    SizedBox(
-                      height: 4,
-                    ),
-                    iconText(homeController.orders[index].city, Icons.map),
-                    SizedBox(
-                      height: 4,
-                    ),
-                    iconText(
-                        homeController.orders[index].deliveredDate, Icons.place),
-                  ],
                 ),
               ),
-            ),
-          ),
-          Positioned(
-            left: Get.width * (0.45),
-            child: GestureDetector(
-              onTap: () async {
-                var temp = await launch('tel://${homeController.orders[index].custPhone}');
-              },
-              child: Container(
-                padding: EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6),
-                    color: Color(white),
-                    boxShadow: [
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 14,
+                child: ClipPath(
+                  clipper: SectionClipper(),
+                  child: Container(
+                    alignment: Alignment.centerRight,
+                    decoration:
+                    BoxDecoration(color: Color(boxBlueHigh), boxShadow: [
                       BoxShadow(
                           offset: Offset(0, -2),
                           blurRadius: 2,
                           spreadRadius: 1,
                           color: Color(black).withAlpha(50))
                     ]),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.phone,
-                      color: Color(black),
-                      size: 12,
+                    padding: EdgeInsets.all(8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        iconText(homeController.orders[index].paymentMethod,
+                            Icons.attach_money_rounded),
+                        SizedBox(
+                          height: 4,
+                        ),
+                        iconText(homeController.orders[index].city, Icons.map),
+                        SizedBox(
+                          height: 4,
+                        ),
+                        iconText(homeController.orders[index].deliveredDate,
+                            Icons.place),
+                      ],
                     ),
-                    SizedBox(
-                      width: 4,
-                    ),
-                    Text(
-                      homeController.orders[index].custPhone,
-                      style: TextStyle(color: Color(boxBlueHigh), fontSize: 12),
-                    )
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
-        ]),
+              Positioned(
+                left: size.maxWidth * (0.45),
+                child: GestureDetector(
+                  onTap: () async {
+                    var temp = await launch(
+                        'tel://${homeController.orders[index].custPhone}');
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6),
+                        color: Color(white),
+                        boxShadow: [
+                          BoxShadow(
+                              offset: Offset(0, -2),
+                              blurRadius: 2,
+                              spreadRadius: 1,
+                              color: Color(black).withAlpha(50))
+                        ]),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.phone,
+                          color: Color(black),
+                          size: 12,
+                        ),
+                        SizedBox(
+                          width: 4,
+                        ),
+                        Text(
+                          homeController.orders[index].custPhone,
+                          style: TextStyle(color: Color(boxBlueHigh), fontSize: 12),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ]),
+          );
+        },
       ),
     );
   }
@@ -425,17 +462,19 @@ class _DashboradUIState extends State<DashboradUI> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           InkWell(
-            child: Obx(() => homeController.dLoading.value ? Container(
-              child: Icon(
-                Icons.arrow_back_ios_rounded,
-                color: Color(black).withAlpha(100),
-              ),
-            ) : Container(
-              child: Icon(
-                Icons.arrow_back_ios_rounded,
-                color: Color(black),
-              ),
-            )),
+            child: Obx(() => homeController.dLoading.value
+                ? Container(
+                    child: Icon(
+                      Icons.arrow_back_ios_rounded,
+                      color: Color(black).withAlpha(100),
+                    ),
+                  )
+                : Container(
+                    child: Icon(
+                      Icons.arrow_back_ios_rounded,
+                      color: Color(black),
+                    ),
+                  )),
             onTap: () {
               if (!homeController.dLoading.value) {
                 getNextAlerts(false);
@@ -448,11 +487,15 @@ class _DashboradUIState extends State<DashboradUI> {
                     TextStyle(color: Color(black).withAlpha(200), fontSize: 12),
               )),
           InkWell(
-            child: Obx(() => homeController.dLoading.value ? Container(
-              child: Icon(Icons.arrow_forward_ios_rounded, color: Color(black).withAlpha(100)),
-            ) : Container(
-              child: Icon(Icons.arrow_forward_ios_rounded, color: Color(black)),
-            )),
+            child: Obx(() => homeController.dLoading.value
+                ? Container(
+                    child: Icon(Icons.arrow_forward_ios_rounded,
+                        color: Color(black).withAlpha(100)),
+                  )
+                : Container(
+                    child: Icon(Icons.arrow_forward_ios_rounded,
+                        color: Color(black)),
+                  )),
             onTap: () {
               if (!homeController.dLoading.value) {
                 getNextAlerts(true);
@@ -472,7 +515,7 @@ class _DashboradUIState extends State<DashboradUI> {
         homeController.prevPage();
       }
     } else {
-      dialogBox('Error', 'No internet connection!');
+      alertBox('Error', 'No internet connection!');
     }
   }
 }

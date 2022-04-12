@@ -106,6 +106,11 @@ class _MapUIState extends State<SingleOrderMapUI> {
           right: 16,
           top: 16,
         ),
+        Positioned(
+          bottom: 16,
+          right: 16,
+          child: zoomControl(),
+        )
       ],
     );
   }
@@ -133,6 +138,59 @@ class _MapUIState extends State<SingleOrderMapUI> {
                 left: borderSide,
                 right: borderSide),
           )),
+    );
+  }
+
+  Widget zoomControl(){
+    BorderSide borderSide = BorderSide(color: Color(blue), width: 2);
+    return Column(
+      children: [
+        Container(
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
+              border: Border.all(color: Color(blue), width: 2),
+              color: Color(mapYellow)
+          ),
+          padding: EdgeInsets.all(4),
+          child: InkWell(
+            child: Icon(
+              Icons.add,
+              size: 20,
+              color: Color(blue),
+            ),
+            onTap: (){
+              if(mapController.zoom >= 15){
+                return;
+              }
+              mapController.move(mapController.center, mapController.zoom + 0.5);
+            },
+          ),
+        ),
+        SizedBox(height: 4,),
+        Container(
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(bottomLeft: Radius.circular(4), bottomRight: Radius.circular(4)),
+              border: Border(left: borderSide, right: borderSide, bottom: borderSide, top: borderSide),
+              color: Color(mapYellow)
+          ),
+          padding: EdgeInsets.all(4),
+          child: InkWell(
+            child: Icon(
+              Icons.remove,
+              size: 20,
+              color: Color(blue),
+            ),
+            onTap: (){
+              if(mapController.zoom <= 2){
+                return;
+              }
+              mapController.move(mapController.center, mapController.zoom - 0.5);
+            },
+          ),
+        )
+      ],
     );
   }
 

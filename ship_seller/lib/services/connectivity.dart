@@ -38,7 +38,7 @@ class NetworkConnectivityController extends GetxController {
         break;
       case ConnectivityResult.mobile:
       case ConnectivityResult.wifi:
-        connected.value = await _checkIfWifiHasInternetAccess();
+        connected.value = true; //await _checkIfWifiHasInternetAccess();
         break;
     }
     print('connection status' + connected.value.toString());

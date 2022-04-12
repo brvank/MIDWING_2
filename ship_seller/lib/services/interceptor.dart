@@ -27,7 +27,6 @@ class DioInterceptor extends Interceptor{
   Future<dynamic> onResponse(Response response, ResponseInterceptorHandler handler) async {
     print(response.realUri.toString());
     print('response received');
-    print(response.data);
     return super.onResponse(response, handler);
   }
 }

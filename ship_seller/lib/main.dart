@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ship_seller/authorization/login_page_ui.dart';
@@ -33,6 +34,7 @@ class _shipSellerState extends State<shipSeller> {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      theme: ThemeData(textTheme: GoogleFonts.workSansTextTheme()),
       initialBinding: NetworkConnectivityBinding(),
       debugShowCheckedModeBanner: false,
       title: 'Ship Seller',
@@ -68,8 +70,7 @@ class _SplashScreenState extends State<SplashScreen> {
         }
       } else {
         if (mounted) {
-          Get.offAll(LoginPageUI(),
-              transition: Transition.fadeIn, duration: Duration(seconds: 1));
+          Get.offAll(LoginPageUI());
         }
       }
     } catch (e) {
