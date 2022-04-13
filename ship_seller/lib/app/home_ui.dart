@@ -6,6 +6,7 @@ import 'package:ship_seller/app/dashboard_ui.dart';
 import 'package:ship_seller/app/home_controller.dart';
 import 'package:ship_seller/app/map_ui.dart';
 import 'package:ship_seller/app/profile_ui.dart';
+import 'package:ship_seller/app/returned_orders_ui.dart';
 import 'package:ship_seller/app/webMapUI.dart';
 import 'package:ship_seller/authorization/login_page_ui.dart';
 import 'package:ship_seller/utils/colors_themes.dart';
@@ -21,13 +22,16 @@ class HomeUI extends StatefulWidget {
 
 class _HomeUIState extends State<HomeUI> {
   late HomeController homeController;
+  bool hovered = false;
+  double width = 0;
 
   late int selectedIndex;
 
   List<Widget> widgets = [
-    const DashboradUI(),
-    const MapUI(),
-    const ProfileUI()
+    DashboradUI(),
+    MapUI(),
+    ProfileUI(),
+    ReturnedOrdersUI()
   ];
 
   @override
@@ -85,6 +89,10 @@ class _HomeUIState extends State<HomeUI> {
               icon: Icon(Icons.person),
               label: 'Profile',
             ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.assignment_return),
+              label: 'Return',
+            ),
           ],
           type: BottomNavigationBarType.fixed,
           currentIndex: selectedIndex,
@@ -110,12 +118,57 @@ class _HomeUIState extends State<HomeUI> {
                   appName(),
                 ],
               ),
-              personLogo(),
+              Row(
+                children: [
+                  returnScreen(),
+                  SizedBox(
+                    width: 16,
+                  ),
+                  personLogo(),
+                ],
+              ),
             ],
           ),
         ),
       ),
       body: webDashBoardBody(),
+    );
+  }
+
+  Widget returnScreen() {
+    return MouseRegion(
+      onEnter: (_) {
+        setState(() {
+          hovered = true;
+          width = 60;
+        });
+      },
+      onExit: (_) {
+        setState(() {
+          hovered = false;
+          width = 0;
+        });
+      },
+      child: GestureDetector(
+        onTap: () {
+          Get.to(ReturnedOrdersUI());
+        },
+        child: Chip(
+          backgroundColor: Colors.white,
+          avatar: Icon(Icons.assignment_return, color: Color(blue),),
+          label: AnimatedContainer(
+            curve: Curves.easeIn,
+            width: width,
+              duration: Duration(milliseconds: 200),
+              child: Container(
+                child: Center(
+                  child: FittedBox(
+                    child: Text('RETURNS', style: TextStyle(color: Color(blue)),),
+                  ),
+                ),
+              )),
+        ),
+      ),
     );
   }
 

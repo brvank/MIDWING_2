@@ -9,8 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class CommonOrdersUI extends StatefulWidget {
   String city;
-  Function? function;
-  CommonOrdersUI({Key? key, required this.city, this.function}) : super(key: key);
+  CommonOrdersUI({Key? key, required this.city}) : super(key: key);
 
   @override
   State<CommonOrdersUI> createState() => _CommonOrdersUIState();
@@ -100,9 +99,6 @@ class _CommonOrdersUIState extends State<CommonOrdersUI> {
       onTap: (){
         if(MediaQuery.of(context).size.width > 500){
           homeController.selectedOrder.value = index;
-          if(widget.function != null){
-            widget.function!(homeController.selectedOrder.value);
-          }
         }else{
           Get.to(() => SingleOrderUI(order: homeController.filteredOrders[index]));
         }

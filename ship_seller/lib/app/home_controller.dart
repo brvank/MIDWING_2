@@ -11,6 +11,7 @@ import 'package:ship_seller/app/single_order/single_order.dart';
 import 'package:ship_seller/authorization/login_page_ui.dart';
 import 'package:ship_seller/utils/constants.dart';
 import 'package:ship_seller/utils/models/order.dart';
+import 'package:ship_seller/utils/models/return.dart';
 import 'package:ship_seller/utils/widgets.dart';
 import 'package:latlong2/latlong.dart' as ll;
 
@@ -106,7 +107,6 @@ class HomeController extends GetxController {
           dListStatus++;
           dListStatus = dListStatus % 2;
         }
-
       }
     } on dio.DioError catch (e) {
       try {
@@ -126,6 +126,72 @@ class HomeController extends GetxController {
 
     dLoading.value = false;
     prepareForMap();
+  }
+
+  //for return
+
+  var rOrders = <Return>[].obs;
+  var rLoading = false.obs;
+  var rError = false.obs;
+  var rPage = 0.obs;
+  var rTotal = 0.obs;
+
+  void rNextPage() {
+    if (rPage.value >= rTotal.value) {
+      rPage.value = 1;
+    } else {
+      rPage++;
+    }
+    getAllReturnOrders();
+  }
+
+  void rPrevPage() {
+    if (rPage.value <= 1) {
+      rPage.value = rTotal.value;
+    } else {
+      rPage--;
+    }
+    getAllReturnOrders();
+  }
+
+  Future<void> getAllReturnOrders() async {
+    if (rLoading.value) return;
+
+    rOrders.clear();
+    rLoading.value = true;
+    rError.value = false;
+
+    try {
+      await Future.delayed(Duration(seconds: 1));
+      int p = rPage.value == 0 ? 1 : rPage.value;
+      dio.Response response = await homeNetworking.getAllReturnOrders(p);
+      if (response.statusCode == 200) {
+        rPage.value = response.data['meta']['pagination']['current_page'];
+        rTotal.value = response.data['meta']['pagination']['total_pages'];
+
+        int len = response.data['data'].length;
+
+        for (int i = 0; i < len; i++) {
+          rOrders.add(createReturn(response.data['data'][i]));
+        }
+      }
+    } on dio.DioError catch (e) {
+      try {
+        if (e.response!.statusCode == 401) {
+          logout();
+        } else {
+          rError.value = true;
+        }
+      } catch (e) {
+        rError.value = true;
+      }
+    } catch (e) {
+      print(e.toString());
+      print('error');
+      rError.value = true;
+    }
+
+    rLoading.value = false;
   }
 
   Order createOrder(var response) {
@@ -148,6 +214,9 @@ class HomeController extends GetxController {
       }
     }
     String city = response['customer_city'] ?? '---';
+    // if(city == "North West Delhi" || city == "South West Delhi"){
+    //   city = "South Delhi";
+    // }
     String state = response['customer_state'] ?? '---';
     String paymentStatus = response['payment_status'] ?? '---';
     String deliveredDate =
@@ -168,7 +237,37 @@ class HomeController extends GetxController {
         paymentMethod: paymentMethod,
         product: product,
         pickup: pickup);
+    print(order.city);
     return order;
+  }
+
+  Return createReturn(var res) {
+    int id = res['id'] ?? 0;
+    String cName = res['customer_name'] ?? '';
+    String cPhone = res['customer_phone'] ?? '';
+    String cEmail = res['customer_email'] ?? '';
+    String pName = res['pickup_person_name'] ?? '';
+    String pEmail = res['pickup_person_email'] ?? '';
+    String pPhone = res['pickup_person_phone'] ?? '';
+    String cAdd = res['delivery_address'] ?? '';
+    String pAdd = res['pickup_location'] ?? '';
+    String status = res['status'] ?? '';
+    String payment = res['payment_method'] ?? '';
+    String reason = res['return_reason'] ?? '';
+
+    return Return(
+        id: id,
+        cName: cName,
+        cPhone: cPhone,
+        cEmail: cEmail,
+        pName: pName,
+        pPhone: pPhone,
+        pEmail: pEmail,
+        cAdd: cAdd,
+        pAdd: pAdd,
+        status: status,
+        payment: payment,
+        reason: reason);
   }
 
   Product createProduct(var response) {
@@ -198,7 +297,6 @@ class HomeController extends GetxController {
         }
       }
       String city = response['city'] ?? '---';
-      print(city);
       String state = response['state'] ?? '---';
       String country = response['country'] ?? '---';
       String pincode = response['pin_code'] ?? '---';
@@ -290,7 +388,6 @@ class HomeController extends GetxController {
       for (int i = 0; i < cities.length; i++) {
         try {
           var response = await prepareLatLong(cities.elementAt(i));
-
           if (response != null) {
             try {
               latLngList.add(response);
@@ -328,9 +425,11 @@ class HomeController extends GetxController {
                     'assets/waypoint.svg',
                   ),
                   onTap: () {
-                    if(MediaQuery.of(context).size.width > webRefWidth){
-                      Get.to(CommonSingleOrderUI(city: cities.elementAt(i),));
-                    }else{
+                    if (MediaQuery.of(context).size.width > webRefWidth) {
+                      Get.to(CommonSingleOrderUI(
+                        city: cities.elementAt(i),
+                      ));
+                    } else {
                       Get.to(CommonOrdersUI(city: cities.elementAt(i)));
                     }
                   },

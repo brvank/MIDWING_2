@@ -75,8 +75,7 @@ class _CommonSingleOrderUIState extends State<CommonSingleOrderUI> {
         Expanded(
           flex: 1,
           child: CommonOrdersUI(
-            city: widget.city,
-            function: update,
+            city: widget.city
           ),
         ),
         Expanded(
@@ -90,13 +89,6 @@ class _CommonSingleOrderUIState extends State<CommonSingleOrderUI> {
                 : common!))
       ],
     );
-  }
-
-  void update(int index){
-    common = SingleOrderUI(order: homeController.filteredOrders[index]);
-    setState(() {
-      print('this is main problem');
-    });
   }
 
   Widget noneSelected() {

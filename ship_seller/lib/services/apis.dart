@@ -4,4 +4,6 @@ String LOGIN = '/auth/login';
 
 String ORDERS = '/orders';
 
+String RETURNS = '/orders/processing/return';
+
 String TRACK = '/courier/track/shipment/191686343';

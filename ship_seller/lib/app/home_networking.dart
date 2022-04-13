@@ -17,6 +17,18 @@ class HomeNetworking{
 
   }
 
+  Future<Response> getAllReturnOrders(int page) async {
+
+    DioInstance dioInstance = DioInstance();
+    Dio dio = dioInstance.createDio();
+    dio.interceptors.add(DioInterceptor());
+
+    Response response = await dio.get(RETURNS, queryParameters: {'page':page});
+
+    return response;
+
+  }
+
   Future<Response> getLatLong(String place) async {
 
     Dio dio = Dio();

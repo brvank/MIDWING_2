@@ -50,7 +50,7 @@ class _LoginPageUIState extends State<LoginPageUI> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Color(yellow).withAlpha(20),
+        backgroundColor: MediaQuery.of(context).size.width <= webRefWidth ? Colors.white : Color(yellow).withAlpha(20),
         body: MediaQuery.of(context).size.width <= webRefWidth ? loginFormMobile() : loginFormWeb(),
       ),
     );
