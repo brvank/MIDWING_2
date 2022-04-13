@@ -106,6 +106,7 @@ class HomeController extends GetxController {
           dListStatus++;
           dListStatus = dListStatus % 2;
         }
+
       }
     } on dio.DioError catch (e) {
       try {
@@ -171,47 +172,51 @@ class HomeController extends GetxController {
   }
 
   Product createProduct(var response) {
-    if (response == null || response.length == 0) {
-      response[0] = [
-        {'id': 123456, 'name': 'Product', 'status': 'DELIVERED'}
-      ];
+    try {
+      Product product = Product(
+          id: response['id'] ?? 0,
+          name: response['name'] ?? '---',
+          status: response['status'] ?? '---');
+      return product;
+    } catch (e) {
+      return SafeValues.product;
     }
-    Product product = Product(
-        id: response['id'] ?? 0,
-        name: response['name'] ?? '---',
-        status: response['status'] ?? '---');
-    return product;
   }
 
   Pickup createPickup(var response) {
-    int id = response['id'] ?? 0;
-    List<String> latLngList =
-        response['customer_address'].toString().split(' ');
-    String addr = '';
-    for (int i = 0; i < 2; i++) {
-      if (i < latLngList.length) {
-        addr += latLngList[i];
-        if (i == 0) addr += ' ';
-      } else {
-        continue;
+    try {
+      int id = response['id'] ?? 0;
+      List<String> latLngList =
+          response['customer_address'].toString().split(' ');
+      String addr = '';
+      for (int i = 0; i < 2; i++) {
+        if (i < latLngList.length) {
+          addr += latLngList[i];
+          if (i == 0) addr += ' ';
+        } else {
+          continue;
+        }
       }
+      String city = response['city'] ?? '---';
+      print(city);
+      String state = response['state'] ?? '---';
+      String country = response['country'] ?? '---';
+      String pincode = response['pin_code'] ?? '---';
+      String delvName = response['delvName'] ?? '---';
+      String delvPhone = response['delvPhone'] ?? '---';
+      Pickup pickup = Pickup(
+          id: id,
+          address: addr,
+          city: city,
+          state: state,
+          country: country,
+          pincode: pincode,
+          delvName: delvName,
+          delvPhone: delvPhone);
+      return pickup;
+    } catch (e) {
+      return SafeValues.pickup;
     }
-    String city = response['city'] ?? '---';
-    String state = response['state'] ?? '---';
-    String country = response['country'] ?? '---';
-    String pincode = response['pin_code'] ?? '---';
-    String delvName = response['delvName'] ?? '---';
-    String delvPhone = response['delvPhone'] ?? '---';
-    Pickup pickup = Pickup(
-        id: id,
-        address: addr,
-        city: city,
-        state: state,
-        country: country,
-        pincode: pincode,
-        delvName: delvName,
-        delvPhone: delvPhone);
-    return pickup;
   }
 
   //for logout
