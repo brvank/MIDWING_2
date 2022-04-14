@@ -177,7 +177,7 @@ class _DashboradUIState extends State<DashboradUI> {
 
   Widget block(String title, int count, int color) {
     return Obx(() => Container(
-          margin: EdgeInsets.symmetric(horizontal: 2),
+          margin: EdgeInsets.symmetric(horizontal: 2, vertical: 2),
           padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           decoration: BoxDecoration(
               color: Color(color),
