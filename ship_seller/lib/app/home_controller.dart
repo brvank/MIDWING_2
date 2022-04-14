@@ -74,11 +74,17 @@ class HomeController extends GetxController {
   }
 
   Future<void> filterOrders(String city) async {
-    filteredOrders.clear();
 
+    print(city);
+    filteredOrders.clear();
+    print('filtering');
     filteredOrders.value = orders.where((p0) {
+      print(p0.city + ' ,,, ' + city);
+      print(p0.city == city);
       return p0.city == city;
     }).toList();
+
+    print(filteredOrders.length);
   }
 
   Future<void> getAllOrders() async {
@@ -430,6 +436,7 @@ class HomeController extends GetxController {
                         city: cities.elementAt(i),
                       ));
                     } else {
+                      print(cities.elementAt(i));
                       Get.to(CommonOrdersUI(city: cities.elementAt(i)));
                     }
                   },

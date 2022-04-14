@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:ship_seller/app/home_controller.dart';
 import 'package:ship_seller/services/connectivity.dart';
@@ -44,60 +45,62 @@ class _ReturnedOrdersUIState extends State<ReturnedOrdersUI> {
 
   @override
   Widget build(BuildContext context) {
-    return MediaQuery.of(context).size.width > webRefWidth ? Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color(blueBg),
-        title: Text(
-          'Returns',
-          style: TextStyle(color: Color(blue), fontSize: 20),
-        ),
-        leading: IconButton(
-          icon: Icon(
-            Icons.chevron_left,
-            size: 32,
-            color: Color(blue),
-          ),
-          onPressed: () {
-            Get.back();
-          },
-        ),
-      ),
-      body: body(),
-    ) : Scaffold(
-      body: body(),
-    );
+    return MediaQuery.of(context).size.width > webRefWidth
+        ? Scaffold(
+            appBar: AppBar(
+              backgroundColor: Color(blueBg),
+              title: Text(
+                'Returns',
+                style: TextStyle(color: Color(blue), fontSize: 20),
+              ),
+              leading: IconButton(
+                icon: Icon(
+                  Icons.chevron_left,
+                  size: 32,
+                  color: Color(blue),
+                ),
+                onPressed: () {
+                  Get.back();
+                },
+              ),
+            ),
+            body: body(),
+          )
+        : Scaffold(
+            body: body(),
+          );
   }
 
-  Widget body(){
+  Widget body() {
     return Stack(
       children: [
         returnOrder(),
         Obx(() =>
-        homeController.rOrders.isEmpty && !homeController.rLoading.value
-            ? Positioned(
-          bottom: 16,
-          right: 16,
-          child: InkWell(
-            onTap: () {
-              if (networkConnectivityController.connected.value) {
-                homeController.getAllReturnOrders();
-              } else {
-                alertBox('Error', 'No internet connection!');
-              }
-            },
-            child: Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                  shape: BoxShape.circle, color: Color(white)),
-              child: Icon(
-                Icons.refresh,
-                color: Color(blue),
-              ),
-            ),
-          ),
-        )
-            : SizedBox())
+            homeController.rOrders.isEmpty && !homeController.rLoading.value
+                ? Positioned(
+                    bottom: 16,
+                    right: 16,
+                    child: InkWell(
+                      onTap: () {
+                        if (networkConnectivityController.connected.value) {
+                          homeController.getAllReturnOrders();
+                        } else {
+                          alertBox('Error', 'No internet connection!');
+                        }
+                      },
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle, color: Color(white)),
+                        child: Icon(
+                          Icons.refresh,
+                          color: Color(blue),
+                        ),
+                      ),
+                    ),
+                  )
+                : SizedBox())
       ],
     );
   }
@@ -149,48 +152,77 @@ class _ReturnedOrdersUIState extends State<ReturnedOrdersUI> {
     return Container(
       child: Center(
         child: Container(
-          width: MediaQuery.of(context).size.width > webRefWidth ? webRefWidth + MediaQuery.of(context).size.width * (0.1) : webRefWidth + 0,
+          width: MediaQuery.of(context).size.width > webRefWidth
+              ? webRefWidth + MediaQuery.of(context).size.width * (0.1)
+              : webRefWidth + 0,
           margin: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           padding: EdgeInsets.all(8),
           decoration: BoxDecoration(
-              color: Color(boxBlueLow).withAlpha(15),
+            boxShadow: [
+              BoxShadow(color: Color(blue).withAlpha(60), spreadRadius: 1, blurRadius: 5)
+            ],
+              // color: Color(boxBlueLow).withAlpha(15),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Color(boxBlueHigh).withOpacity(0.5))),
+              border: Border.all(color: Color(boxBlueHigh).withOpacity(0.2))),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 status(homeController.rOrders[index].status),
                 Divider(),
-                detailsBox('Order ID ', homeController.rOrders[index].id.toString()),
-                SizedBox(height: spacing,),
+                detailsBox(
+                    'Order ID ', homeController.rOrders[index].id.toString()),
+                SizedBox(
+                  height: spacing,
+                ),
                 detailsBox('Reason ', homeController.rOrders[index].reason),
-                SizedBox(height: spacing,),
-                detailsBox('Payment Method ', homeController.rOrders[index].payment.toUpperCase(), color: Color(boxBlueHigh)),
+                SizedBox(
+                  height: spacing,
+                ),
+                detailsBox('Payment Method ',
+                    homeController.rOrders[index].payment.toUpperCase(),
+                    color: Color(boxBlueHigh)),
                 // detailsBox('Status ', homeController.rOrders[index].status),
                 Divider(),
-                detailsBox(
-                    'Customer Name ', homeController.rOrders[index].cName.toString()),
-                SizedBox(height: spacing,),
+                detailsBox('Customer Name ',
+                    homeController.rOrders[index].cName.toString()),
+                SizedBox(
+                  height: spacing,
+                ),
                 detailsBoxPhone('Customer Phone ',
                     homeController.rOrders[index].cPhone.toString()),
-                SizedBox(height: spacing,),
+                SizedBox(
+                  height: spacing,
+                ),
                 detailsBoxEmail('Customer Email ',
                     homeController.rOrders[index].cEmail.toString()),
-                SizedBox(height: spacing,),
-                detailsBox('Customer Address', homeController.rOrders[index].cAdd),
-                Divider(),
+                SizedBox(
+                  height: spacing,
+                ),
                 detailsBox(
-                    'Pickup Person Name ', homeController.rOrders[index].pName.toString()),
-                SizedBox(height: spacing,),
+                    'Customer Address', homeController.rOrders[index].cAdd),
+                Divider(),
+                detailsBox('Pickup Person Name ',
+                    homeController.rOrders[index].pName.toString()),
+                SizedBox(
+                  height: spacing,
+                ),
                 detailsBoxPhone('Pickup Person Phone ',
                     homeController.rOrders[index].pPhone.toString()),
-                SizedBox(height: spacing,),
+                SizedBox(
+                  height: spacing,
+                ),
                 detailsBoxEmail('Pickup Person Email ',
                     homeController.rOrders[index].pEmail.toString()),
-                SizedBox(height: spacing,),
-                detailsBox('Pickup Location', homeController.rOrders[index].pAdd),
-                SizedBox(height: spacing,),
+                SizedBox(
+                  height: spacing,
+                ),
+                detailsBox(
+                    'Pickup Location', homeController.rOrders[index].pAdd),
+                SizedBox(
+                  height: spacing,
+                ),
               ],
             ),
           ),
@@ -199,10 +231,13 @@ class _ReturnedOrdersUIState extends State<ReturnedOrdersUI> {
     );
   }
 
-  Widget status(String status){
+  Widget status(String status) {
     return Container(
       child: Center(
-        child: Text(status, style: TextStyle(color: Color(boxBlueHigh), fontSize: 20),),
+        child: Text(
+          status,
+          style: TextStyle(color: Color(blue), fontSize: 16, fontFamily: GoogleFonts.athiti().fontFamily),
+        ),
       ),
     );
   }
@@ -214,7 +249,9 @@ class _ReturnedOrdersUIState extends State<ReturnedOrdersUI> {
           text: TextSpan(
               style: TextStyle(fontSize: 12, color: Color(black)),
               children: [
-            TextSpan(text: title + ': ', style: TextStyle(fontWeight: FontWeight.bold)),
+            TextSpan(
+                text: title + ': ',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             TextSpan(text: data, style: TextStyle(color: color))
           ])),
     );
@@ -262,7 +299,9 @@ class _ReturnedOrdersUIState extends State<ReturnedOrdersUI> {
               child: Text(
                 data,
                 style: TextStyle(
-                    fontSize: 12, color: Colors.blue, fontStyle: FontStyle.italic),
+                    fontSize: 12,
+                    color: Colors.blue,
+                    fontStyle: FontStyle.italic),
               ),
             ),
           )

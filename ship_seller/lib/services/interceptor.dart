@@ -20,6 +20,12 @@ class DioInterceptor extends Interceptor{
 
   @override
   Future<dynamic> onError(DioError err, ErrorInterceptorHandler handler) async {
+    try{
+      print(err.response!.realUri);
+      print(err.response!.data);
+    }catch(e){
+
+    }
     return super.onError(err, handler);
   }
 

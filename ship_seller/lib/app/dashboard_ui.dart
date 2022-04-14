@@ -177,7 +177,7 @@ class _DashboradUIState extends State<DashboradUI> {
 
   Widget block(String title, int count, int color) {
     return Obx(() => Container(
-      margin: EdgeInsets.symmetric(horizontal: 2),
+          margin: EdgeInsets.symmetric(horizontal: 2),
           padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           decoration: BoxDecoration(
               color: Color(color),
@@ -262,7 +262,7 @@ class _DashboradUIState extends State<DashboradUI> {
         Get.to(() => SingleOrderUI(order: homeController.orders[index]));
       },
       child: LayoutBuilder(
-        builder: (context, size){
+        builder: (context, size) {
           return Container(
             height: 100,
             margin: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
@@ -294,7 +294,8 @@ class _DashboradUIState extends State<DashboradUI> {
                       SizedBox(
                         height: 4,
                       ),
-                      text('Product', homeController.orders[index].product.name),
+                      text(
+                          'Product', homeController.orders[index].product.name),
                       SizedBox(
                         height: 4,
                       ),
@@ -312,7 +313,7 @@ class _DashboradUIState extends State<DashboradUI> {
                   child: Container(
                     alignment: Alignment.centerRight,
                     decoration:
-                    BoxDecoration(color: Color(boxBlueHigh), boxShadow: [
+                        BoxDecoration(color: Color(boxBlueHigh), boxShadow: [
                       BoxShadow(
                           offset: Offset(0, -2),
                           blurRadius: 2,
@@ -340,44 +341,47 @@ class _DashboradUIState extends State<DashboradUI> {
                   ),
                 ),
               ),
-              Positioned(
-                left: size.maxWidth * (0.45),
-                child: GestureDetector(
-                  onTap: () async {
-                    var temp = await launch(
-                        'tel://${homeController.orders[index].custPhone}');
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(6),
-                        color: Color(white),
-                        boxShadow: [
-                          BoxShadow(
-                              offset: Offset(0, -2),
-                              blurRadius: 2,
-                              spreadRadius: 1,
-                              color: Color(black).withAlpha(50))
-                        ]),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.phone,
-                          color: Color(black),
-                          size: 12,
+              homeController.orders[index].custPhone.length == 0
+                  ? SizedBox()
+                  : Positioned(
+                      left: size.maxWidth * (0.45),
+                      child: GestureDetector(
+                        onTap: () async {
+                          var temp = await launch(
+                              'tel://${homeController.orders[index].custPhone}');
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              color: Color(white),
+                              boxShadow: [
+                                BoxShadow(
+                                    offset: Offset(0, -2),
+                                    blurRadius: 2,
+                                    spreadRadius: 1,
+                                    color: Color(black).withAlpha(50))
+                              ]),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.phone,
+                                color: Color(black),
+                                size: 12,
+                              ),
+                              SizedBox(
+                                width: 4,
+                              ),
+                              Text(
+                                homeController.orders[index].custPhone,
+                                style: TextStyle(
+                                    color: Color(boxBlueHigh), fontSize: 12),
+                              )
+                            ],
+                          ),
                         ),
-                        SizedBox(
-                          width: 4,
-                        ),
-                        Text(
-                          homeController.orders[index].custPhone,
-                          style: TextStyle(color: Color(boxBlueHigh), fontSize: 12),
-                        )
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              ),
             ]),
           );
         },

@@ -31,6 +31,7 @@ class _CommonOrdersUIState extends State<CommonOrdersUI> {
     }
 
     homeController.filterOrders(widget.city).then((value){
+      print(widget.city);
       if(mounted){
         setState(() {
           loading = false;
@@ -89,6 +90,9 @@ class _CommonOrdersUIState extends State<CommonOrdersUI> {
     return ListView.builder(
       itemCount: homeController.filteredOrders.length,
       itemBuilder: (context, index){
+        print(homeController.filteredOrders[index].id);
+        print(homeController.filteredOrders[index].city);
+        print(homeController.filteredOrders[index].custName);
         return order(index);
       },
     );
@@ -132,15 +136,15 @@ class _CommonOrdersUIState extends State<CommonOrdersUI> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      text('Id', homeController.orders[index].id.toString()),
+                      text('Id', homeController.filteredOrders[index].id.toString()),
                       SizedBox(
                         height: 4,
                       ),
-                      text('Product', homeController.orders[index].product.name),
+                      text('Product', homeController.filteredOrders[index].product.name),
                       SizedBox(
                         height: 4,
                       ),
-                      text('Customer', homeController.orders[index].custName),
+                      text('Customer', homeController.filteredOrders[index].custName),
                     ],
                   ),
                 ),
@@ -166,28 +170,28 @@ class _CommonOrdersUIState extends State<CommonOrdersUI> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        iconText(homeController.orders[index].paymentMethod,
+                        iconText(homeController.filteredOrders[index].paymentMethod,
                             Icons.attach_money_rounded),
                         SizedBox(
                           height: 4,
                         ),
-                        iconText(homeController.orders[index].city, Icons.map),
+                        iconText(homeController.filteredOrders[index].city, Icons.map),
                         SizedBox(
                           height: 4,
                         ),
-                        iconText(homeController.orders[index].deliveredDate,
+                        iconText(homeController.filteredOrders[index].deliveredDate,
                             Icons.place),
                       ],
                     ),
                   ),
                 ),
               ),
-              Positioned(
+              homeController.filteredOrders[index].custPhone.length == 0 ? SizedBox() : Positioned(
                 left: size.maxWidth * (0.45),
                 child: GestureDetector(
                   onTap: () async {
                     var temp = await launch(
-                        'tel://${homeController.orders[index].custPhone}');
+                        'tel://${homeController.filteredOrders[index].custPhone}');
                   },
                   child: Container(
                     padding: EdgeInsets.all(4),
@@ -212,7 +216,7 @@ class _CommonOrdersUIState extends State<CommonOrdersUI> {
                           width: 4,
                         ),
                         Text(
-                          homeController.orders[index].custPhone,
+                          homeController.filteredOrders[index].custPhone,
                           style: TextStyle(color: Color(boxBlueHigh), fontSize: 12),
                         )
                       ],

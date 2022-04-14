@@ -74,9 +74,7 @@ class _CommonSingleOrderUIState extends State<CommonSingleOrderUI> {
       children: [
         Expanded(
           flex: 1,
-          child: CommonOrdersUI(
-            city: widget.city
-          ),
+          child: CommonOrdersUI(city: widget.city),
         ),
         Expanded(
             flex: MediaQuery.of(context).size.width > 1300

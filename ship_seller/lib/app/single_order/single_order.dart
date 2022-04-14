@@ -4,9 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ship_seller/app/home_controller.dart';
+import 'package:ship_seller/app/home_networking.dart';
 import 'package:ship_seller/app/single_order/single_order_map.dart';
 import 'package:ship_seller/app/single_order/track_webview.dart';
 import 'package:ship_seller/utils/colors_themes.dart';
+import 'package:ship_seller/utils/constants.dart';
 import 'package:ship_seller/utils/models/order.dart';
 import 'package:latlong2/latlong.dart' as ll;
 import 'package:ship_seller/utils/widgets.dart';
@@ -94,6 +96,17 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
   }
 
   Widget singleOrder() {
+    // return MediaQuery.of(context).size.width > webRefWidth.toDouble() ? Column(
+    //   children: [
+    //     orderId(),
+    //     Expanded(
+    //       child: Row(
+    //         crossAxisAlignment: CrossAxisAlignment.start,
+    //           children: [map(), Expanded(flex: 1, child: details())]),
+    //     )
+    //   ],
+    // ) : Column(
+    //     children: [orderId(), map(), Expanded(flex: 1, child: details())]);
     return Column(
         children: [orderId(), map(), Expanded(flex: 1, child: details())]);
   }
@@ -107,7 +120,7 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
         children: [
           Container(
             margin: EdgeInsets.symmetric(vertical: 4),
-            child: Text(
+            child: SelectableText(
               'Order #' + widget.order.id.toString(),
               style: TextStyle(
                   color: Color(black),
@@ -129,8 +142,8 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
   Widget map() {
     return Container(
       margin: EdgeInsets.all(16),
-      width: Get.height * (0.4),
-      height: Get.height * (0.4),
+      width: MediaQuery.of(context).size.height * (0.4),
+      height: MediaQuery.of(context).size.height * (0.4),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           color: Color(white),
@@ -180,7 +193,66 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
         detail('Delivery status: ', widget.order.deliveredDate),
         detail('Payment status: ', widget.order.paymentStatus),
         detail('Payment method: ', widget.order.paymentMethod),
+        downloadInvoiceButton(),
       ],
+    );
+  }
+
+  Widget downloadInvoiceButton(){
+    return GestureDetector(
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          margin: EdgeInsets.all(16),
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Color(blue),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.download_rounded,
+                color: Color(white),
+                size: 16,
+              ),
+              SizedBox(
+                width: 4,
+              ),
+              Text(
+                'Download Invoice',
+                style: TextStyle(color: Color(white), fontSize: 16),
+              )
+            ],
+          ),
+        ),
+      ),
+      onTap: () async {
+        loadingWidget('Please wait...');
+        HomeNetworking().downloadLink([widget.order.id.toString()]).then((res) async {
+          Get.back();
+          try{
+            if(res == 0){
+              alertBox('No Invoice', 'It is an incomplete order!');
+            }else if(res == 1){
+              alertBox('Error', 'Something went wrong!');
+            }else{
+              bool link = res.data['is_invoice_created'];
+              if(link){
+                await launch(res.data['invoice_url']);
+              }else{
+                alertBox('Oops!', 'It is an incomplete order!');
+              }
+            }
+
+          }catch(e){
+            print(e.toString());
+            print('error');
+            alertBox('Error', 'Something went wrong!');
+          }
+        });
+      },
     );
   }
 
@@ -244,7 +316,7 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
   }
 
   Widget delivery() {
-    return GestureDetector(
+    return widget.order.custPhone.isEmpty ? SizedBox() : GestureDetector(
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
@@ -263,7 +335,7 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
               width: 4,
             ),
             Text(
-              'Contact ',
+              'Contact',
               style: TextStyle(color: Color(white), fontSize: 16),
             )
           ],
