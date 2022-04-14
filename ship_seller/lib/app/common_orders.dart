@@ -108,7 +108,7 @@ class _CommonOrdersUIState extends State<CommonOrdersUI> {
     return InkWell(
       onTap: () {
         if (widget.function != null) {
-          widget.function!(homeController.filteredOrders);
+          widget.function!(homeController.filteredOrders[index]);
         }
 
         if (MediaQuery.of(context).size.width > 500) {
