@@ -9,36 +9,34 @@ import 'package:url_launcher/url_launcher.dart';
 
 class CommonOrdersUI extends StatefulWidget {
   String city;
-  CommonOrdersUI({Key? key, required this.city}) : super(key: key);
+  Function? function;
+  CommonOrdersUI({Key? key, required this.city, this.function})
+      : super(key: key);
 
   @override
   State<CommonOrdersUI> createState() => _CommonOrdersUIState();
 }
 
 class _CommonOrdersUIState extends State<CommonOrdersUI> {
-
   late HomeController homeController;
   bool loading = true;
 
-
   @override
   void initState() {
-
-    try{
+    try {
       homeController = Get.find();
-    }catch(e){
+    } catch (e) {
       homeController = Get.put(HomeController());
     }
 
-    homeController.filterOrders(widget.city).then((value){
+    homeController.filterOrders(widget.city).then((value) {
       print(widget.city);
-      if(mounted){
+      if (mounted) {
         setState(() {
           loading = false;
         });
       }
     });
-
   }
 
   @override
@@ -47,10 +45,18 @@ class _CommonOrdersUIState extends State<CommonOrdersUI> {
       child: Scaffold(
         body: Column(
           children: [
-            MediaQuery.of(context).size.width > webRefWidth ? SizedBox() : cityName(),
+            MediaQuery.of(context).size.width > webRefWidth
+                ? SizedBox()
+                : cityName(),
             Expanded(
               flex: 1,
-              child: loading ? Center(child: CircularProgressIndicator(color: Color(blue),),) : filteredOrders(),
+              child: loading
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: Color(blue),
+                      ),
+                    )
+                  : filteredOrders(),
             )
           ],
         ),
@@ -77,7 +83,7 @@ class _CommonOrdersUIState extends State<CommonOrdersUI> {
           ),
           Container(
             margin: EdgeInsets.symmetric(vertical: 4),
-            width: Get.width*(0.5),
+            width: Get.width * (0.5),
             height: 4,
             color: Color(black).withOpacity(0.3),
           )
@@ -86,10 +92,10 @@ class _CommonOrdersUIState extends State<CommonOrdersUI> {
     );
   }
 
-  Widget filteredOrders(){
+  Widget filteredOrders() {
     return ListView.builder(
       itemCount: homeController.filteredOrders.length,
-      itemBuilder: (context, index){
+      itemBuilder: (context, index) {
         print(homeController.filteredOrders[index].id);
         print(homeController.filteredOrders[index].city);
         print(homeController.filteredOrders[index].custName);
@@ -100,15 +106,20 @@ class _CommonOrdersUIState extends State<CommonOrdersUI> {
 
   Widget order(int index) {
     return InkWell(
-      onTap: (){
-        if(MediaQuery.of(context).size.width > 500){
+      onTap: () {
+        if (widget.function != null) {
+          widget.function!(homeController.filteredOrders);
+        }
+
+        if (MediaQuery.of(context).size.width > 500) {
           homeController.selectedOrder.value = index;
-        }else{
-          Get.to(() => SingleOrderUI(order: homeController.filteredOrders[index]));
+        } else {
+          Get.to(
+              () => SingleOrderUI(order: homeController.filteredOrders[index]));
         }
       },
       child: LayoutBuilder(
-        builder: (context, size){
+        builder: (context, size) {
           return Container(
             height: 100,
             margin: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
@@ -136,15 +147,18 @@ class _CommonOrdersUIState extends State<CommonOrdersUI> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      text('Id', homeController.filteredOrders[index].id.toString()),
+                      text('Id',
+                          homeController.filteredOrders[index].id.toString()),
                       SizedBox(
                         height: 4,
                       ),
-                      text('Product', homeController.filteredOrders[index].product.name),
+                      text('Product',
+                          homeController.filteredOrders[index].product.name),
                       SizedBox(
                         height: 4,
                       ),
-                      text('Customer', homeController.filteredOrders[index].custName),
+                      text('Customer',
+                          homeController.filteredOrders[index].custName),
                     ],
                   ),
                 ),
@@ -158,7 +172,7 @@ class _CommonOrdersUIState extends State<CommonOrdersUI> {
                   child: Container(
                     alignment: Alignment.centerRight,
                     decoration:
-                    BoxDecoration(color: Color(boxBlueHigh), boxShadow: [
+                        BoxDecoration(color: Color(boxBlueHigh), boxShadow: [
                       BoxShadow(
                           offset: Offset(0, -2),
                           blurRadius: 2,
@@ -170,60 +184,66 @@ class _CommonOrdersUIState extends State<CommonOrdersUI> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        iconText(homeController.filteredOrders[index].paymentMethod,
+                        iconText(
+                            homeController.filteredOrders[index].paymentMethod,
                             Icons.attach_money_rounded),
                         SizedBox(
                           height: 4,
                         ),
-                        iconText(homeController.filteredOrders[index].city, Icons.map),
+                        iconText(homeController.filteredOrders[index].city,
+                            Icons.map),
                         SizedBox(
                           height: 4,
                         ),
-                        iconText(homeController.filteredOrders[index].deliveredDate,
+                        iconText(
+                            homeController.filteredOrders[index].deliveredDate,
                             Icons.place),
                       ],
                     ),
                   ),
                 ),
               ),
-              homeController.filteredOrders[index].custPhone.length == 0 ? SizedBox() : Positioned(
-                left: size.maxWidth * (0.45),
-                child: GestureDetector(
-                  onTap: () async {
-                    var temp = await launch(
-                        'tel://${homeController.filteredOrders[index].custPhone}');
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(6),
-                        color: Color(white),
-                        boxShadow: [
-                          BoxShadow(
-                              offset: Offset(0, -2),
-                              blurRadius: 2,
-                              spreadRadius: 1,
-                              color: Color(black).withAlpha(50))
-                        ]),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.phone,
-                          color: Color(black),
-                          size: 12,
+              homeController.filteredOrders[index].custPhone.length == 0
+                  ? SizedBox()
+                  : Positioned(
+                      left: size.maxWidth * (0.45),
+                      child: GestureDetector(
+                        onTap: () async {
+                          var temp = await launch(
+                              'tel://${homeController.filteredOrders[index].custPhone}');
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              color: Color(white),
+                              boxShadow: [
+                                BoxShadow(
+                                    offset: Offset(0, -2),
+                                    blurRadius: 2,
+                                    spreadRadius: 1,
+                                    color: Color(black).withAlpha(50))
+                              ]),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.phone,
+                                color: Color(black),
+                                size: 12,
+                              ),
+                              SizedBox(
+                                width: 4,
+                              ),
+                              Text(
+                                homeController.filteredOrders[index].custPhone,
+                                style: TextStyle(
+                                    color: Color(boxBlueHigh), fontSize: 12),
+                              )
+                            ],
+                          ),
                         ),
-                        SizedBox(
-                          width: 4,
-                        ),
-                        Text(
-                          homeController.filteredOrders[index].custPhone,
-                          style: TextStyle(color: Color(boxBlueHigh), fontSize: 12),
-                        )
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              ),
             ]),
           );
         },

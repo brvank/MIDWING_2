@@ -83,9 +83,8 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
 
   @override
   Widget build(BuildContext context) {
-
     WidgetsBinding.instance?.addPostFrameCallback((_) {
-      if(widget.order.id != id){
+      if (widget.order.id != id) {
         getLatLong();
       }
     });
@@ -198,7 +197,7 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
     );
   }
 
-  Widget downloadInvoiceButton(){
+  Widget downloadInvoiceButton() {
     return GestureDetector(
       child: Align(
         alignment: Alignment.centerLeft,
@@ -230,23 +229,23 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
       ),
       onTap: () async {
         loadingWidget('Please wait...');
-        HomeNetworking().downloadLink([widget.order.id.toString()]).then((res) async {
+        HomeNetworking()
+            .downloadLink([widget.order.id.toString()]).then((res) async {
           Get.back();
-          try{
-            if(res == 0){
+          try {
+            if (res == 0) {
               alertBox('No Invoice', 'It is an incomplete order!');
-            }else if(res == 1){
+            } else if (res == 1) {
               alertBox('Error', 'Something went wrong!');
-            }else{
+            } else {
               bool link = res.data['is_invoice_created'];
-              if(link){
+              if (link) {
                 await launch(res.data['invoice_url']);
-              }else{
+              } else {
                 alertBox('Oops!', 'It is an incomplete order!');
               }
             }
-
-          }catch(e){
+          } catch (e) {
             print(e.toString());
             print('error');
             alertBox('Error', 'Something went wrong!');
@@ -306,44 +305,51 @@ class _SingleOrderUIState extends State<SingleOrderUI> {
             alertBox('Error', 'Tracking details not available!');
           }
         },
-        child: loading || error ? Text('---', style: TextStyle(color: Colors.grey),) : Text(
-          'Track Order',
-          style: TextStyle(
-              color: Color(blue),
-              fontSize: 18,
-              decoration: TextDecoration.underline),
-        ));
+        child: loading || error
+            ? Text(
+                '---',
+                style: TextStyle(color: Colors.grey),
+              )
+            : Text(
+                'Track Order',
+                style: TextStyle(
+                    color: Color(blue),
+                    fontSize: 18,
+                    decoration: TextDecoration.underline),
+              ));
   }
 
   Widget delivery() {
-    return widget.order.custPhone.isEmpty ? SizedBox() : GestureDetector(
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: Color(blue),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.phone,
-              color: Color(white),
-              size: 16,
+    return widget.order.custPhone.isEmpty
+        ? SizedBox()
+        : GestureDetector(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Color(blue),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.phone,
+                    color: Color(white),
+                    size: 16,
+                  ),
+                  SizedBox(
+                    width: 4,
+                  ),
+                  Text(
+                    'Contact',
+                    style: TextStyle(color: Color(white), fontSize: 16),
+                  )
+                ],
+              ),
             ),
-            SizedBox(
-              width: 4,
-            ),
-            Text(
-              'Contact',
-              style: TextStyle(color: Color(white), fontSize: 16),
-            )
-          ],
-        ),
-      ),
-      onTap: () async {
-        var temp = await launch('tel://${widget.order.custPhone}');
-      },
-    );
+            onTap: () async {
+              var temp = await launch('tel://${widget.order.custPhone}');
+            },
+          );
   }
 }

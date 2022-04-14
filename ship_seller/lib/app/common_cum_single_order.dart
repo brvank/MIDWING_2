@@ -9,6 +9,7 @@ import 'package:ship_seller/app/home_controller.dart';
 import 'package:ship_seller/app/single_order/single_order.dart';
 import 'package:ship_seller/utils/colors_themes.dart';
 import 'package:ship_seller/utils/constants.dart';
+import 'package:ship_seller/utils/models/order.dart';
 
 class CommonSingleOrderUI extends StatefulWidget {
   String city;
@@ -66,7 +67,9 @@ class _CommonSingleOrderUIState extends State<CommonSingleOrderUI> {
   }
 
   Widget mobileView() {
-    return CommonOrdersUI(city: widget.city);
+    return CommonOrdersUI(
+      city: widget.city,
+    );
   }
 
   Widget commonOrder() {
@@ -74,7 +77,10 @@ class _CommonSingleOrderUIState extends State<CommonSingleOrderUI> {
       children: [
         Expanded(
           flex: 1,
-          child: CommonOrdersUI(city: widget.city),
+          child: CommonOrdersUI(
+            city: widget.city,
+            function: updateCommonWidget,
+          ),
         ),
         Expanded(
             flex: MediaQuery.of(context).size.width > 1300
@@ -87,6 +93,12 @@ class _CommonSingleOrderUIState extends State<CommonSingleOrderUI> {
                 : common!))
       ],
     );
+  }
+
+  void updateCommonWidget(Order order) {
+    setState(() {
+      common = SingleOrderUI(order: order);
+    });
   }
 
   Widget noneSelected() {
